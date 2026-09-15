@@ -1,0 +1,8 @@
+# Visual-baseline screenshots and binary trace fixtures: treat as binary so git
+# never applies line-ending conversion or text diffing to them. `binary` is the
+# built-in shorthand for `-text -diff`.
+*.png binary
+test/e2e/__screenshots__/** binary
+*.svdat binary
+*.elf binary
+*.gif binary

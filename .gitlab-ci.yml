@@ -1,0 +1,94 @@
+# CI for the trace viewer.
+#
+# The e2e job runs the headless Playwright harness in the *pinned* official
+# Playwright Linux image — the same image `scripts/e2e-docker.sh` uses locally
+# and the one the committed screenshot baselines were generated in — so visual
+# comparisons are free of macOS↔Linux rasterization drift. On failure it
+# publishes the Playwright report and the actual/expected/diff PNGs so a broken
+# baseline can be inspected without re-running locally.
+#
+# Keep the image tag in lockstep with the @playwright/test version in
+# package.json and the tag in scripts/e2e-docker.sh.
+
+stages:
+  - test
+  - build
+  - deploy
+
+default:
+  tags:
+    - build
+    - internet
+
+# Node `tsx --test` unit suite (`test/unit/`), plus the type check.
+unit:
+  stage: test
+  image: node:22-bookworm-slim
+  variables:
+    CI: "true"
+  script:
+    - npm ci --no-audit --no-fund
+    - npm run typecheck
+    - npm run test:unit
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+e2e:
+  stage: test
+  image: mcr.microsoft.com/playwright:v1.63.0-noble
+  variables:
+    CI: "true"
+  script:
+    - npm ci --no-audit --no-fund
+    - npx playwright test
+  artifacts:
+    when: on_failure
+    expire_in: 1 week
+    paths:
+      - test-results/
+      - playwright-report/
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+# Production Vite build (`web/` → `dist/web/`). Runs on MRs too so a build that
+# no longer compiles is caught before merge, not at deploy time. The artifact
+# feeds the `pages` job; `base: "./"` in vite.config.ts keeps the emitted asset
+# URLs relative so the app works under the Pages project subpath.
+build-web:
+  stage: build
+  image: node:22-bookworm-slim
+  variables:
+    CI: "true"
+  script:
+    - npm ci --no-audit --no-fund
+    - npm run build
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - dist/web/
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+# Publish the built viewer to GitLab Pages, which serves whatever the `pages`
+# job exposes as a `public/` artifact. Default branch only — Pages reflects
+# what's released on `main`.
+pages:
+  stage: deploy
+  image: node:22-bookworm-slim
+  needs:
+    - build-web
+  script:
+    - mv dist/web public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'

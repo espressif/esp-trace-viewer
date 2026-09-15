@@ -1,0 +1,1963 @@
+/*
+ * Trace viewer shell styling.
+ *
+ * Colors use CSS custom properties for operating system theme support (`data-theme` on <html>). Light defaults are defined in :root; dark theme overrides are defined under [data-theme="dark"]. Layout uses nested .split containers with .splitter dividers between child elements.
+ */
+
+:root {
+  color-scheme: light;
+  --bg: #f4f5f6;
+  --panel: #ffffff;
+  --panel-2: #fafbfc;
+  --header: #f1f3f5;
+  --text: #30363b;
+  --text-dim: #65717b;
+  --border: #d4d9de;
+  /* Links, focus rings, ticks and the dock's active tab: the documentation blue, not a saturated fill. */
+  --accent: #297fb8;
+  /* Product mark and the active workspace tab, from the developer portal. */
+  --brand: #e7352c;
+  /* Control states. Active is a light grey-blue rather than a filled accent. */
+  --hover-bg: #e6eaed;
+  --hover-border: #c9d1d7;
+  --active-bg: #e8edf1;
+  --active-border: #b8c4cd;
+  --active-text: #253e52;
+  --grid-line: #e9edf0;
+  --grid-text: #65717c;
+  --lane-stripe: rgba(90, 100, 115, 0.045);
+  --lane-text: #3a4250;
+  --tl-api-mark: rgba(15, 18, 22, 0.62);
+  --tl-log-mark: #1769d6;
+  --tl-ready-fill: rgba(195, 211, 223, 0.75);
+  --tl-ready-border: rgba(130, 151, 167, 0.9);
+  --tl-switch-line: rgba(60, 68, 82, 0.55);
+  /* Overflow gaps: the error red, thinned so the hatch reads as a warning behind the lanes rather than over them. */
+  --tl-gap-fill: rgba(192, 57, 43, 0.09);
+  --tl-gap-hatch: rgba(192, 57, 43, 0.38);
+  --tl-gap-edge: rgba(192, 57, 43, 0.7);
+  --cursor-line: rgba(36, 47, 56, 0.7);
+  --reference-line: rgba(214, 138, 16, 0.95);
+  /* Selection is a pale tint, not a saturated wash. */
+  --selected: #e4f0fb;
+  --selected-hover: #d5e7f7;
+  --row-hover: #edf4f9;
+  --error: #c0392b;
+  --ok: #26816b;
+  --warn: #b8740f;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #1d232a;
+  --panel: #20272e;
+  --panel-2: #252c33;
+  --header: #282f37;
+  --text: #d4dbe1;
+  --text-dim: #99a7b2;
+  --border: #3a444d;
+  --accent: #76b3e1;
+  --brand: #ef625b;
+  --hover-bg: #394651;
+  --hover-border: #506271;
+  --active-bg: #334555;
+  --active-border: #526a7f;
+  --active-text: #d6e8f4;
+  --grid-line: #303a43;
+  --grid-text: #a8bdcd;
+  --lane-stripe: rgba(180, 190, 205, 0.04);
+  --lane-text: #a1afba;
+  --tl-api-mark: rgba(215, 232, 245, 0.7);
+  --tl-log-mark: #78b3e0;
+  --tl-ready-fill: rgba(140, 150, 185, 0.28);
+  --tl-ready-border: rgba(150, 160, 195, 0.45);
+  --tl-switch-line: rgba(185, 195, 215, 0.5);
+  --tl-gap-fill: rgba(255, 107, 91, 0.1);
+  --tl-gap-hatch: rgba(255, 107, 91, 0.34);
+  --tl-gap-edge: rgba(255, 107, 91, 0.65);
+  --cursor-line: rgba(237, 243, 247, 0.75);
+  --reference-line: rgba(219, 169, 104, 0.95);
+  --selected: #29455f;
+  --selected-hover: #345473;
+  --row-hover: #344d60;
+  --error: #ff6b5b;
+  --ok: #79c3a9;
+  --warn: #e0a64b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* One focus ring everywhere, drawn inside the control so it never nudges a tight toolbar row. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+
+/* Panes and dock sections set their own display, so hiding has to outrank them. */
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font);
+  font-size: 12px;
+  color: var(--text);
+  background: var(--bg);
+}
+
+#app,
+.app {
+  height: 100%;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+/* ---- application bar ---------------------------------------------------- */
+
+/* The bar present in every workspace: product mark, File menu, workspace switch, theme and help. */
+.appbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  height: 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--header);
+  user-select: none;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  white-space: nowrap;
+  margin-right: 6px;
+}
+
+/* Three bars of differing height, standing in for a trace waveform. */
+.brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 16px;
+}
+
+.brand-mark i {
+  display: block;
+  width: 3px;
+  background: var(--error);
+}
+
+.brand-mark i:nth-child(1) { height: 8px; }
+.brand-mark i:nth-child(2) { height: 16px; }
+.brand-mark i:nth-child(3) { height: 11px; }
+
+.workspace-tabs {
+  display: flex;
+  align-self: stretch;
+}
+
+.workspace-tab {
+  font: inherit;
+  color: var(--text-dim);
+  background: none;
+  border: 0;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.workspace-tab.is-active {
+  color: var(--text);
+  background: var(--panel);
+  box-shadow: inset 0 -2px var(--brand);
+}
+
+/* ---- timeline controls bar ---------------------------------------------- */
+
+/* Second row, shown only in the Timeline workspace. Wraps rather than hiding controls when narrow. */
+.controls {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  min-height: 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel-2);
+  user-select: none;
+}
+
+
+.tb-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 5px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.tb-search:focus-within {
+  border-color: var(--accent);
+}
+
+.tb-search-input {
+  font: inherit;
+  width: 160px;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--text);
+  padding: 3px 0;
+}
+
+.tb-search-icon,
+.tb-kbd {
+  color: var(--text-dim);
+}
+
+.tb-kbd {
+  font-family: var(--mono);
+  font-size: 0.8em;
+}
+
+/* ---- toolbar dropdowns (Filter / Navigate) ------------------------------ */
+
+.menu-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Dropdown trigger styled inline with toolbar buttons (`.tb-btn`) with a caret indicator. */
+.menu-trigger {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 9px;
+  cursor: pointer;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.menu-trigger::after {
+  content: "▾";
+  margin-left: 5px;
+  color: var(--text-dim);
+}
+
+.menu-trigger:hover,
+.menu-trigger[aria-expanded="true"] {
+  background: var(--hover-bg);
+  border-color: var(--hover-border);
+}
+
+/* A dropdown narrowing what is shown — `CPUs 1/2` — reads as pressed. */
+.menu-trigger.is-active {
+  background: var(--active-bg);
+  border-color: var(--active-border);
+  color: var(--active-text);
+}
+
+/* Positioned against the viewport by the dropdown's `place()`, so it escapes any pane that clips overflow. */
+.menu-popup {
+  position: fixed;
+  z-index: 50;
+  min-width: 232px;
+  padding: 4px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.menu-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 8px;
+  font: inherit;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-radius: 4px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-row:hover:not([disabled]) {
+  background: var(--row-hover);
+}
+
+.menu-row[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.menu-check {
+  flex: 0 0 12px;
+  text-align: center;
+  color: var(--accent);
+}
+
+.menu-row:hover:not([disabled]) .menu-check {
+  color: var(--accent);
+}
+
+.menu-label {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.menu-accel {
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 0.85em;
+}
+
+.menu-row:hover:not([disabled]) .menu-accel {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.menu-sep {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--border);
+}
+
+.tb-btn {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 9px;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1.4;
+}
+
+.tb-btn:hover:not([disabled]) {
+  background: var(--hover-bg);
+  border-color: var(--hover-border);
+}
+
+.tb-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tb-zoom {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.tb-label {
+  color: var(--text-dim);
+}
+
+/* Status bar readouts (span and cursor) using proportional text styling matching surrounding metrics. */
+.tb-cursor,
+.tb-span {
+  white-space: nowrap;
+}
+
+.tb-sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+/* Compact relative zoom buttons (−/+/⤢) adjacent to the preset selector. */
+.tb-zoom-btn {
+  min-width: 26px;
+  text-align: center;
+  font-family: var(--mono);
+}
+
+/* Every toggle in the shell reads the same when it is on: a leading tick, not a filled button. */
+.tb-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tb-tick {
+  width: 10px;
+  color: var(--text-dim);
+  font-size: 0.85em;
+}
+
+.tb-toggle:not(.is-active) {
+  color: var(--text-dim);
+  background: var(--panel-2);
+  border-color: transparent;
+}
+
+.tb-toggle.is-active .tb-tick {
+  color: var(--accent);
+}
+
+/* ---- find / go-to bar (Navigate menu, ⌘F) ------------------------------- */
+
+.findbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-top: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.findbar[hidden] {
+  display: none;
+}
+
+.find-label {
+  color: var(--text-dim);
+}
+
+.find-input,
+.find-goto {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.find-input {
+  min-width: 220px;
+}
+
+.find-input:focus,
+.find-goto:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.find-goto {
+  width: 76px;
+}
+
+.find-count {
+  min-width: 64px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 0.85em;
+}
+
+.find-nav {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 8px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.find-nav:hover:not([disabled]) {
+  background: var(--hover-bg);
+  border-color: var(--hover-border);
+}
+
+/* ---- workspaces, splits & panes ----------------------------------------- */
+
+/* Holds both workspaces; the shell shows one at a time. */
+.workspace-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.workspace {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* A pane whose container already names it draws no header and no border of its own. */
+.pane-bare {
+  border: 0;
+}
+
+/* ---- Events / Logs dock -------------------------------------------------- */
+
+.dock {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+}
+
+.dock.dock-side-bottom {
+  border-left: 0;
+  border-top: 1px solid var(--border);
+}
+
+.dock-head {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  min-height: 26px;
+  background: var(--header);
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+}
+
+.dock-spacer {
+  flex: 1;
+}
+
+.docktab {
+  font: inherit;
+  color: var(--text-dim);
+  background: none;
+  border: 0;
+  border-radius: 3px;
+  padding: 3px 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.docktab.is-active {
+  color: var(--text);
+  background: var(--panel);
+  box-shadow: inset 0 -2px var(--accent);
+}
+
+.dock-count {
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 0.8em;
+}
+
+.dock-icon {
+  min-width: 24px;
+  text-align: center;
+}
+
+.dock-scope {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+.dock-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Both lists at once: side by side when docked at the bottom, stacked when docked right. */
+.dock-content.is-both {
+  flex-direction: row;
+}
+
+.dock-side-right .dock-content.is-both {
+  flex-direction: column;
+}
+
+.dock-content.is-both > .dock-section + .dock-section {
+  border-left: 1px solid var(--border);
+}
+
+.dock-side-right .dock-content.is-both > .dock-section + .dock-section {
+  border-left: 0;
+  border-top: 1px solid var(--border);
+}
+
+.dock-section {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dock-subhead {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.split {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.split-row {
+  flex-direction: row;
+}
+
+.split-column {
+  flex-direction: column;
+}
+
+.split > * {
+  min-width: 0;
+  min-height: 0;
+}
+
+.splitter {
+  flex: 0 0 6px;
+  background: var(--border);
+  position: relative;
+}
+
+.splitter-row {
+  cursor: col-resize;
+}
+
+.splitter-column {
+  cursor: row-resize;
+}
+
+.splitter:hover {
+  background: var(--accent);
+}
+
+body.resizing-col,
+body.resizing-col * {
+  cursor: col-resize !important;
+  user-select: none;
+}
+
+body.resizing-row,
+body.resizing-row * {
+  cursor: row-resize !important;
+  user-select: none;
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+
+.pane-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 8px;
+  background: var(--header);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  user-select: none;
+}
+
+.pane-title {
+  font-weight: 600;
+}
+
+.pane-toggle {
+  border: 0;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  padding: 2px 4px;
+}
+
+.pane-toggle::before {
+  content: "▾";
+}
+
+/* Collapsed pane hides its body, showing only its header. The enclosing split
+   adjusts flex layout so the sibling pane occupies the remaining space. */
+.pane.is-collapsed .pane-body {
+  display: none;
+}
+
+.pane.is-collapsed .pane-toggle::before {
+  content: "▸";
+}
+
+.pane-body {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: auto;
+}
+
+.pane-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- events pane -------------------------------------------------------- */
+
+.ev-table {
+  font-family: var(--mono);
+  font-size: 12px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scroll container providing vertical virtualization and horizontal scrolling
+   when column width exceeds pane width. Header and sizer are its direct children. */
+.ev-scroll {
+  flex: 1;
+  overflow: auto;
+  outline: none;
+  position: relative;
+}
+
+.ev-scroll:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--accent, #4a90d9);
+}
+
+/* Full-height spacer sizing the scrollbar to match total event count. Windowed
+   rows are positioned absolutely within it using translateY transforms. */
+.ev-sizer {
+  position: relative;
+  min-width: 800px;
+}
+
+.ev-body {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-width: 800px;
+  will-change: transform;
+}
+
+/* Fixed row width matching column widths, gaps, and padding, maintaining
+   alignment between header and rows during horizontal scrolling. */
+.ev-row {
+  display: flex;
+  gap: 8px;
+  padding: 0 8px;
+  height: 20px;
+  line-height: 20px;
+  min-width: 800px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.ev-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--panel-2);
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font);
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+.ev-body .ev-row:hover {
+  background: var(--panel-2);
+  cursor: pointer;
+}
+
+.ev-row.is-selected {
+  background: var(--selected);
+}
+
+/* Selected row hover state styled with a distinct accent tint to preserve
+   selection visibility when hovered. */
+.ev-body .ev-row.is-selected:hover {
+  background: var(--selected-hover);
+}
+
+/* Active focus endpoint in a multi-row range selection marked with an inset outline. */
+.ev-row.is-focus {
+  box-shadow: inset 0 0 0 1px var(--accent), inset 3px 0 0 var(--ev-accent, transparent);
+}
+
+.ev-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: none;
+}
+
+.ev-idx {
+  width: 64px;
+  text-align: right;
+  color: var(--text-dim);
+}
+
+.ev-ts {
+  width: 104px;
+  text-align: right;
+}
+
+.ev-core {
+  width: 36px;
+  text-align: center;
+}
+
+.ev-ctx {
+  width: 132px;
+}
+
+.ev-name {
+  width: 188px;
+}
+
+.ev-detail {
+  flex: 1 1 220px;
+  min-width: 220px;
+  color: var(--text-dim);
+}
+
+/* Event class color indicators: left accent stripe via inset shadow and tinted event name. */
+.ev-body .ev-row {
+  box-shadow: inset 3px 0 0 var(--ev-accent, transparent);
+}
+
+.ev-cls-isr {
+  --ev-accent: #e0922f;
+}
+
+.ev-cls-task {
+  --ev-accent: #3fae6b;
+}
+
+.ev-cls-api {
+  --ev-accent: #4a90d9;
+}
+
+.ev-cls-system {
+  --ev-accent: #8a8f98;
+}
+
+.ev-cls-message {
+  --ev-accent: #b07ad0;
+}
+
+.ev-cls-event {
+  --ev-accent: #d0c14a;
+}
+
+.ev-cls-isr .ev-name {
+  color: #e0922f;
+}
+
+.ev-cls-task .ev-name {
+  color: #3fae6b;
+}
+
+.ev-cls-message .ev-name {
+  color: #b07ad0;
+}
+
+.ev-cls-system .ev-name {
+  color: var(--text-dim);
+}
+
+/* ---- logs pane ---------------------------------------------------------- */
+
+/* Virtualized log table structure matching `.ev-*`. */
+.logs-table {
+  font-family: var(--mono);
+  font-size: 12px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.logs-scroll {
+  flex: 1;
+  overflow: auto;
+  outline: none;
+  position: relative;
+}
+
+.logs-scroll:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--accent, #4a90d9);
+}
+
+.logs-sizer {
+  position: relative;
+  min-width: 360px;
+}
+
+.logs-body {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-width: 360px;
+  will-change: transform;
+}
+
+.logs-line {
+  display: flex;
+  gap: 8px;
+  padding: 0 8px;
+  height: 20px;
+  line-height: 20px;
+  min-width: 360px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.logs-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--panel-2);
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font);
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+.logs-body .logs-line:hover {
+  background: var(--panel-2);
+  cursor: pointer;
+}
+
+.logs-line.is-selected {
+  background: var(--selected);
+}
+
+.logs-body .logs-line.is-selected:hover {
+  background: var(--selected-hover);
+}
+
+.logs-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: none;
+}
+
+.logs-ts {
+  width: 104px;
+  text-align: right;
+  color: var(--text-dim);
+}
+
+.logs-ctx {
+  width: 132px;
+}
+
+/* Monospace message column occupying remaining row width. */
+.logs-msg {
+  flex: 1 1 200px;
+  min-width: 200px;
+  font-family: var(--mono);
+}
+
+.logs-empty,
+.ctx-empty {
+  color: var(--text-dim);
+  font-style: italic;
+  padding: 6px 8px;
+}
+
+/* ---- statistics workspace ----------------------------------------------- */
+
+/* The statistics pane fills the window, so its own controls row carries the title. */
+[data-pane="statistics"] .pane-body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Sized to match `.controls`, the Timeline bar it stands in for when the Statistics workspace is up. */
+.ctx-controls {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  min-height: 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text-dim);
+  user-select: none;
+}
+
+.ctx-title {
+  color: var(--text);
+  margin-right: 5px;
+}
+
+.ctx-scope,
+.ctx-type {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.ctx-table {
+  flex: 1;
+  min-height: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  overflow: auto;
+}
+
+.ctx-row {
+  display: flex;
+  gap: 8px;
+  padding: 0 8px;
+  height: 22px;
+  line-height: 22px;
+  min-width: 1340px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.ctx-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--panel-2);
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font);
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+.ctx-body .ctx-row:hover {
+  background: var(--panel-2);
+  cursor: pointer;
+}
+
+.ctx-row.is-selected {
+  background: var(--selected);
+}
+
+.ctx-body .ctx-row.is-selected:hover {
+  background: var(--selected-hover);
+}
+
+.ctx-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: none;
+}
+
+.ctx-head .ctx-cell.is-sortable {
+  cursor: pointer;
+}
+
+.ctx-head .ctx-cell.is-sortable:hover,
+.ctx-head .ctx-cell.is-sorted {
+  color: var(--text);
+}
+
+/* Leading color swatch column. */
+.ctx-swatch-h {
+  width: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.ctx-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+
+.ctx-c-label {
+  width: 130px;
+}
+
+.ctx-c-type {
+  width: 60px;
+}
+
+.ctx-c-cores,
+.ctx-c-priority {
+  width: 56px;
+  text-align: right;
+}
+
+.ctx-c-stackSize {
+  width: 130px;
+  text-align: right;
+  color: var(--text-dim);
+}
+
+.ctx-c-runCount,
+.ctx-c-frequency,
+.ctx-c-lastRunTime,
+.ctx-c-minRunTime,
+.ctx-c-maxRunTime,
+.ctx-c-avgRunTime,
+.ctx-c-totalRunTime {
+  width: 92px;
+  text-align: right;
+}
+
+/* Share of one core: a bar sized to the percentage, with the number after it. */
+.ctx-c-pctTotal {
+  width: 130px;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ctx-bar {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ctx-bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+/* The number takes the rest of the cell and right-aligns inside it, which pins the bar to the cell's left
+   edge. Sizing the number to its content instead would let a wider figure push the bar leftwards, so the
+   bars would step about from row to row instead of forming a column. */
+.ctx-c-pctTotal .ctx-cell-text {
+  flex: 1 1 auto;
+  text-align: right;
+}
+
+/* A figure that names a place in the trace reads as a link to it. */
+.ctx-locate {
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+
+.ctx-locate:hover {
+  text-decoration-style: solid;
+}
+
+/* ---- timeline pane ------------------------------------------------------- */
+
+[data-pane="timeline"] .pane-canvas {
+  cursor: crosshair;
+}
+
+/* Hover tooltip displaying event index, name, details, and time delta.
+   Positioned absolutely without intercepting pointer events. */
+.tl-tooltip {
+  position: absolute;
+  z-index: 5;
+  max-width: 320px;
+  padding: 4px 7px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  font-size: 11px;
+  color: var(--text);
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tl-tt-head {
+  font-weight: 600;
+}
+
+.tl-tt-detail {
+  font-family: var(--mono);
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tl-tt-delta {
+  color: var(--text-dim);
+}
+
+/* ---- cpu-load pane ------------------------------------------------------ */
+
+[data-pane="cpuload"] .pane-canvas {
+  cursor: crosshair;
+}
+
+/* CPU load per-bin breakdown tooltip positioned absolutely without intercepting pointer events. */
+.cpu-tooltip {
+  position: absolute;
+  z-index: 5;
+  min-width: 120px;
+  max-width: 220px;
+  padding: 4px 7px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  font-size: 11px;
+  color: var(--text);
+  pointer-events: none;
+}
+
+.cpu-tt-head {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.cpu-tt-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cpu-tt-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+
+.cpu-tt-name {
+  flex: 1;
+  font-family: var(--mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cpu-tt-pct {
+  font-family: var(--mono);
+  color: var(--text-dim);
+}
+
+/* ---- dataplot pane ------------------------------------------------------ */
+
+[data-pane="dataplot"] .pane-canvas {
+  cursor: crosshair;
+}
+
+/* Data plot series legend overlay displaying visibility, color, and summary statistics.
+   Positioned in the top-right corner of the pane body above the canvas. */
+.dp-legend {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  max-width: min(60%, 420px);
+  max-height: calc(100% - 16px);
+  overflow: auto;
+  padding: 6px 8px;
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  font-size: 11px;
+  color: var(--text);
+}
+
+.dp-legend-empty {
+  color: var(--text-dim);
+}
+
+.dp-series {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 0;
+  justify-content: space-between;
+}
+
+.dp-series.is-hidden {
+  opacity: 0.5;
+}
+
+.dp-series-id {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.dp-vis {
+  margin: 0;
+}
+
+.dp-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+
+.dp-name {
+  font-family: var(--mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dp-stats {
+  display: flex;
+  gap: 8px;
+  font-family: var(--mono);
+  color: var(--text-dim);
+  flex: 0 0 auto;
+}
+
+.dp-stat {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.dp-stat-k {
+  opacity: 0.7;
+}
+
+.dp-stat-v {
+  color: var(--text);
+}
+
+.dp-stat-cur .dp-stat-k {
+  color: var(--accent);
+  opacity: 1;
+}
+
+/* ---- status bar --------------------------------------------------------- */
+
+.statusbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 3px 10px;
+  background: var(--header);
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-dim);
+  user-select: none;
+}
+
+.sb-events,
+.sb-source {
+  color: var(--text);
+}
+
+/* One family across the bar. The figures still need stable digit widths so a running readout does not
+   jitter as it counts, which tabular numerals give without switching to a monospace face. */
+.sb-range,
+.sb-refs,
+.sb-elf-name,
+.sb-events,
+.sb-duration,
+.sb-lanes,
+.sb-source {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* A measured A-to-B interval reads as active; an incomplete pair stays quiet. */
+.sb-refs.is-measuring {
+  color: var(--text);
+}
+
+.sb-spacer {
+  flex: 1;
+}
+
+.sb-error.has-error {
+  color: var(--error);
+}
+
+/* Loaded ELF status displaying filename and SHA-256 verification verdict against trace hash.
+   Displays green on match, amber on mismatch, and neutral when trace omits a hash. */
+.sb-elf[hidden] {
+  display: none;
+}
+
+.sb-elf-name {
+  color: var(--text);
+}
+
+/* ---- drop overlay ------------------------------------------------------- */
+
+.drop-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 3px dashed var(--accent);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.drop-overlay.is-active {
+  display: flex;
+}
+
+.drop-hint {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--panel);
+  padding: 14px 22px;
+  border-radius: 8px;
+}
+
+/* ---- blocking loading overlay ------------------------------------------- */
+
+/* Loading overlay displayed above the welcome modal with z-index 300. */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 13, 18, 0.5);
+}
+
+.loading-overlay[hidden] {
+  display: none;
+}
+
+.loading-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 280px;
+  padding: 18px 26px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.4);
+  color: var(--text);
+}
+
+.loading-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.loading-pct {
+  margin-left: auto;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.loading-bar[hidden] {
+  display: none;
+}
+
+/* ---- welcome modal ------------------------------------------------------ */
+
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(10, 13, 18, 0.5);
+}
+
+.welcome-overlay[hidden] {
+  display: none;
+}
+
+.welcome-dialog {
+  position: relative;
+  width: min(640px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  padding: 24px 24px 20px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.4);
+}
+
+.welcome-dialog:focus {
+  outline: none;
+}
+
+.welcome-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-dim);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.welcome-close:hover {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.welcome-title {
+  margin: 0 0 4px;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.welcome-sub {
+  margin: 0 0 18px;
+  color: var(--text-dim);
+}
+
+.welcome-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 520px) {
+  .welcome-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.welcome-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 116px;
+  padding: 14px 16px;
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.welcome-tile:hover {
+  border-color: var(--accent);
+  background: var(--selected);
+}
+
+.welcome-tile-icon {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.welcome-tile-title {
+  font-weight: 600;
+}
+
+.welcome-tile-desc {
+  color: var(--text-dim);
+  font-size: 0.92em;
+}
+
+/* Back link out of the demo-trace picker. */
+.welcome-back {
+  font: inherit;
+  color: var(--text-dim);
+  background: none;
+  border: 0;
+  padding: 0 0 10px;
+  cursor: pointer;
+}
+
+.welcome-back:hover {
+  color: var(--text);
+}
+
+.welcome-demo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* One row per bundled capture, stacking its name over its description. */
+.welcome-demo-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 14px;
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.welcome-demo-entry:hover {
+  border-color: var(--accent);
+  background: var(--selected);
+}
+
+.welcome-demo-entry-title {
+  font-weight: 600;
+}
+
+.welcome-demo-entry-desc {
+  color: var(--text-dim);
+  font-size: 0.92em;
+}
+
+/* ---- Lanes config panel ------------------------------------------------- */
+
+/* Collapsed Lanes panel is hidden from layout flow to allow adjacent panes to expand. */
+[data-pane="lanes"].is-collapsed {
+  display: none;
+}
+
+/* Scrollable lanes list container with pinned add-lane footer. */
+[data-pane="lanes"] .pane-body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Density control and lane count above the tree. */
+.lanes-settings {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel-2);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.lanes-density {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 4px;
+  /* The count keeps its place when the panel is dragged narrow; the select gives way instead. */
+  min-width: 0;
+}
+
+.lanes-spacer {
+  flex: 1;
+}
+
+.lanes-count {
+  font-family: var(--mono);
+  flex: none;
+}
+
+
+.lanes-list {
+  position: relative; /* Position reference for drop indicator */
+  flex: 1 1 auto;
+  overflow: auto;
+  font-family: var(--font);
+  font-size: 12px;
+  padding: 2px 0;
+}
+
+.lanes-empty {
+  color: var(--text-dim);
+  font-style: italic;
+  padding: 8px;
+}
+
+.lanes-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding-right: 6px;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.lanes-row:hover {
+  background: var(--panel-2);
+}
+
+.lanes-row.is-hidden .lanes-label,
+.lanes-row.is-hidden .lanes-swatch {
+  opacity: 0.45;
+}
+
+.lanes-visible {
+  flex: none;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.lanes-row-group {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.lanes-handle {
+  cursor: grab;
+  color: var(--text-dim);
+  user-select: none;
+  touch-action: none;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.lanes-list.is-dragging .lanes-handle {
+  cursor: grabbing;
+}
+
+.lanes-caret {
+  border: none;
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  width: 14px;
+  padding: 0;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.lanes-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.lanes-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.lanes-group-label {
+  cursor: text;
+}
+
+.lanes-rename {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  padding: 0 4px;
+  max-width: 60%;
+}
+
+.lanes-spacer {
+  flex: 1 1 auto;
+}
+
+.lanes-icon {
+  border: none;
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0 3px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.lanes-icon:hover {
+  color: var(--text);
+}
+
+.lanes-icon:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.lanes-move {
+  font-size: 11px;
+}
+
+/* Inline function trace disclosure icon displayed when lane is expanded. */
+.lanes-functrace {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.6;
+}
+
+.lanes-functrace:hover,
+.lanes-functrace.is-expanded {
+  opacity: 1;
+}
+
+.lanes-functrace.is-expanded {
+  color: var(--accent);
+}
+
+/* Add-lane and add-group trigger rows. */
+.lanes-add-trigger {
+  font: inherit;
+  font-size: 11px;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.lanes-row-add:hover .lanes-add-trigger,
+.lanes-add-trigger:hover {
+  color: var(--accent);
+}
+
+/* Drag-and-drop indicator styles for reordering lanes and dropping into groups. */
+.lanes-row.is-drag-src {
+  opacity: 0.4;
+}
+
+.lanes-row-group.is-drop-into {
+  background: var(--selected);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.lanes-drop-line {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 2px;
+  margin-top: -1px;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+/* Add-lane source picker popup menu with fixed positioning. */
+.lanes-menu {
+  position: fixed;
+  z-index: 50;
+  min-width: 150px;
+  max-height: 320px;
+  overflow: auto;
+  padding: 4px 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+  font-family: var(--font);
+  font-size: 12px;
+}
+
+.lanes-menu-head {
+  padding: 4px 10px 2px;
+  color: var(--text-dim);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.lanes-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  background: none;
+  border: none;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.lanes-menu-item:hover {
+  background: var(--row-hover);
+}
+
+.lanes-menu-empty {
+  padding: 4px 10px;
+  color: var(--text-dim);
+  font-style: italic;
+}
