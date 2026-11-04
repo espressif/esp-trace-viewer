@@ -8,7 +8,9 @@
 # baseline can be inspected without re-running locally.
 #
 # Keep the image tag in lockstep with the @playwright/test version in
-# package.json and the tag in scripts/e2e-docker.sh.
+# package.json and the tags in scripts/e2e-docker.sh and
+# .github/workflows/ci.yml. .github/workflows/ci.yml runs the same test jobs on
+# GitHub; keep them in sync.
 
 stages:
   - test
