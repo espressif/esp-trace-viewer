@@ -19,10 +19,10 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@playwright/test": "1.63.0",
-    "@types/node": "^24.0.0",
-    "tsx": "^4.20.0",
-    "typescript": "^5.7.0",
-    "vite": "^8.0.14"
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
   },
   "engines": {
     "node": ">=22"
