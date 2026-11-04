@@ -1,0 +1,21 @@
+# Weekly dependency update checks on the GitHub mirror.
+#
+# Development happens on GitLab and `main` is synced to GitHub, so the pull
+# requests opened here are update notifications and are not merged on GitHub.
+# Apply an update with a merge request on GitLab, where CI runs — see
+# .gitlab-ci.yml, which also lists the files to change together with
+# @playwright/test.
+
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+
+  # Actions used by .github/workflows/pages.yml.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
