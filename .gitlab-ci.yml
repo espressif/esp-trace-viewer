@@ -25,7 +25,7 @@ default:
 # Node `tsx --test` unit suite (`test/unit/`), plus the type check.
 unit:
   stage: test
-  image: node:22-bookworm-slim
+  image: node:26-bookworm-slim
   variables:
     CI: "true"
   script:
@@ -65,7 +65,7 @@ e2e:
 # URLs relative so the app works under the Pages project subpath.
 build-web:
   stage: build
-  image: node:22-bookworm-slim
+  image: node:26-bookworm-slim
   variables:
     CI: "true"
   script:
@@ -84,7 +84,7 @@ build-web:
 # what's released on `main`.
 pages:
   stage: deploy
-  image: node:22-bookworm-slim
+  image: node:26-bookworm-slim
   needs:
     - build-web
   script:
