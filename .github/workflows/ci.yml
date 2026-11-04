@@ -30,7 +30,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    container: mcr.microsoft.com/playwright:v1.63.0-noble
+    container: mcr.microsoft.com/playwright:v1.64.1-noble
     steps:
       - uses: actions/checkout@v7
       - run: npm ci --no-audit --no-fund
