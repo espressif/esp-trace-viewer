@@ -14,7 +14,7 @@
 set -euo pipefail
 
 # Keep this tag in lockstep with the @playwright/test version in package.json
-# and the image in .gitlab-ci.yml.
+# and the images in .gitlab-ci.yml and .github/workflows/ci.yml.
 IMAGE="mcr.microsoft.com/playwright:v1.63.0-noble"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 

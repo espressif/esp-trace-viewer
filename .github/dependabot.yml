@@ -2,9 +2,9 @@
 #
 # Development happens on GitLab and `main` is synced to GitHub, so the pull
 # requests opened here are update notifications and are not merged on GitHub.
-# Apply an update with a merge request on GitLab, where CI runs — see
-# .gitlab-ci.yml, which also lists the files to change together with
-# @playwright/test.
+# .github/workflows/ci.yml checks them. Apply an update with a merge request on
+# GitLab — see .gitlab-ci.yml, which also lists the files to change together
+# with @playwright/test.
 
 version: 2
 

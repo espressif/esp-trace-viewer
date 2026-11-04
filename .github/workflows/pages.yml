@@ -1,10 +1,5 @@
 # Build the viewer and publish it to GitHub Pages.
 #
-# Publishing is all GitHub does here. The type check, the unit suite and the
-# Playwright e2e suite (including the screenshot baselines) run on GitLab, in
-# the same pinned Linux image `scripts/e2e-docker.sh` uses locally — see
-# .gitlab-ci.yml.
-#
 # `base: "./"` in vite.config.ts keeps the emitted asset URLs relative, so the
 # same build works whether it is served from a user/org site root or from a
 # project subpath (`/<repo>/`).
